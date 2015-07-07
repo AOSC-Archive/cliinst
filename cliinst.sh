@@ -2,26 +2,17 @@
 
 # Functions
 install_fail () {
-    printf "
+    whiptail --title "AOSC OS Installation" --msgbox "The installation is failed .." 10 60
+    exit
+}
 
-***********************************************************************************
-
-    The installation of AOSC OS has failed. Please file a bug to 
-    
-    ->      http://bugs.anthonos.org,
-
-    or find one of our developers at #anthon.
-
-***********************************************************************************
-
-    \033[31m-> Press [Enter] to exit installation.\033[0m   "
-    read -p ""
+install_end () {
+    whiptail --title "AOSC OS Installation" --msgbox "The installation is ended" 10 60
     exit
 }
 
 enter_to_continue () {
-    printf "\033[36m    -> Press [Enter] to continue...\033[0m  "
-    read -p ""
+    whiptail --title "AOSC OS Installation" --msgbox "Press enter to continue" 10 60
     clear
 }
 
@@ -157,143 +148,87 @@ mkdir -p /mnt/target
 
 clear
 
-printf "***********************************************************************************
-
-    \033[33mFellow Beta testers...\033[0m
+whiptail --title "AOSC OS Installation Confirm" --msgbox  "Fellow Beta testers...
 
     Firstly, a big thank you for choosing to test our newest system release.
-    We are ready to take your issue reports so please feel free to file them 
-    to our bug tracker, http://bugs.anthonos.org.
+    We are ready to take your issue reports so please feel free to file themto our bug tracker, http://bugs.anthonos.org.
 
     AOSC OS developers
+" 15 60
 
-***********************************************************************************
+whiptail --title "AOSC OS Installation Confirm" --msgbox  "    Before you start, make sure...
 
-"
-enter_to_continue
+    1.  You need a working (probably a fast one if you are impatient) Internet connection for installation if you want to install your system by netboot;
+    2.  You will need a > 10GB partition for some desktop environment to be installed (Hopefully we will fix this before the final debut);
+" 15 60
 
-printf "***********************************************************************************
+whiptail --title "AOSC OS Installation" --msgbox  "STEP I. Choose a Package Manager
 
-    As of why you are using this CLI based installer instead of the fancy QtQuick 
-    one, well sadly, as a matter of fact, we are not yet ready to ship it with our 
-    LiveKit release. 
+    AOSC OS supports DPKG and RPM as system package manager. DPKG and RPM now provide equal support, they both now support PackageKit and all of its graphical frontends." 13 60
 
-    This is a \033[1;31mtransitional\033[0m installer for our Beta testing.
+options=$(whiptail --title "AOSC OS Installation"  --menu "Choose the package manager of your choice" 15 60 3 \
+"DPKG" "Debian Packages" \
+"RPM" "RedHat Package Manager" \
+"" "Learn more about my choices..." 3>&1 1>&2 2>&3)
 
-    \033[1;36mBefore you start, make sure...\033[0m
+exitstatus=$?
 
-    1.  You need a working (probably a fast one if you are impatient) 
-        Internet connection for installation;
-    2.  You will need a > 10GB partition for some desktop environment to be 
-        installed (Hopefully we will fix this before the final debut);
-    3.  Think twice before you proceed, this is a \033[1;31mBETA\033[0m release and 
-        it probably contains multiple bugs that may affect your daily drive;
+case $options in
+    "DPKG") echo "PM=dpkg" >> /tmp/installation-config;break;;
+    "RPM") echo "PM=rpm" >> /tmp/installation-config;break;;
+    "") learn_more_pm;&
+esac 
 
-***********************************************************************************
+whiptail --title "AOSC OS Installation" --msgbox  "STEP II. Choose a Desktop Environment
 
-"
+    AOSC OS provides multiple desktop environment by default, choose one from below, and make good choices!" 10 60
 
-enter_to_continue
+options=(whiptail --title "AOSC OS Installation"  --menu "Choose the desktop environment of your choice" 20 60 8 \
+"GNOME" "Gnome-shell, stable and fancy with heavy load" \
+"Cinnamon" "A gnome-shell fork, mainly used in Linux Mint" \
+"XFCE" "Light weight but useful" \
+"MATE" "A Gnome2 fork, classical and stable" \
+"Unity" "Desktop environment designed for netbook but with heavy load" \
+"KDE" "As stable as KDE" \
+"Kodi" "Family media center" \
+"help" "Learn more about my choices..." )
 
-printf "***********************************************************************************
+exitstatus=$?
 
-    \033[1;36mSTOP I. Choose a Package Manager\033[0m
-
-    AOSC OS supports DPKG and RPM as system package manager. \033[1;31mDPKG\033[0m and \033[1;31mRPM\033[0m now 
-    provide equal support, they both now support PackageKit and all of its 
-    graphical frontends. 
-
-    * As of Beta 1, RPM builds did not ship with packagekit support.
-
-***********************************************************************************
-
-"
-
-PS3=`printf "
-\033[36m    -> Choose the package manager of your choice:   \033[0m"`
-options=("DPKG (Debian Packages)" "RPM (RedHat Package Manager)" "Learn more about my choices..." "Quit")
-select opt in "${options[@]}"
-do
-    case $opt in
-        "DPKG (Debian Packages)")
-            echo PM=dpkg >> /tmp/installation-config
-            break
-            ;;
-        "RPM (RedHat Package Manager)")
-            echo PM=rpm >> /tmp/installation-config
-            break
-            ;;
-        "Quit")
-            exit
-            ;;
-        "Learn more about my choices...")
-            learn_more_pm
-            ;;
-        *)
-            printf "\033[1;31mHey! invalid choice!\033[0m\n"
-            ;;
-    esac
-done
-
-clear
-
-printf "***********************************************************************************
-
-    \033[1;36mSTOP II. Choose a Desktop Environment\033[0m
-
-    AOSC OS provides multiple desktop environment by default, 
-    choose one from below, and make good choices!
-
-***********************************************************************************
-
-"
-
-PS3=`printf "
-\033[36m    ->  Choose the desktop environment of your choice:  \033[0m"`
-options=("GNOME" "Cinnamon" "MATE" "XFCE" "Unity" "KDE" "Kodi" "Learn more about my choices..." "Quit")
-select opt in "${options[@]}"
-do
-    case $opt in
+    case $options in
         "GNOME")
-            echo DE=gnome >> /tmp/installation-config
+            echo "DE=gnome" >> /tmp/installation-config
             break
             ;;
         "Cinnamon")
-            echo DE=cinnamon >> /tmp/installation-config
+            echo "DE=cinnamon" >> /tmp/installation-config
             break
             ;;
         "XFCE")
-            echo DE=xfce >> /tmp/installation-config
+            echo "DE=xfce" >> /tmp/installation-config
             break
             ;;
         "MATE")
-            echo DE=mate >> /tmp/installation-config
+            echo "DE=mate" >> /tmp/installation-config
             break
             ;;
         "Unity")
-            echo DE=unity >> /tmp/installation-config
+            echo "DE=unity" >> /tmp/installation-config
             break
             ;;
         "KDE")
-            echo DE=kde >> /tmp/installation-config
+            echo "DE=kde" >> /tmp/installation-config
             break
             ;;
         "Kodi")
-            echo DE=kodi >> /tmp/installation-config
+            echo "DE=kodi" >> /tmp/installation-config
+	    break
             ;;
-        "Learn more about my choices...")
+        "*")
             learn_more_de
-            ;;
-        "Quit")
-            exit
-            ;;
-        *)
-            printf "\033[1;31mHey! invalid choice!\033[0m\n"
+	    break
             ;;
     esac
-done
-
-clear
 
 printf "***********************************************************************************
 
