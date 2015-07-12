@@ -1,6 +1,6 @@
 #!/bin/bash
 if [ $(which pkexec) ]; then
-    pkexec --disable-internal-agent "/usr/bin/cliinst.sh" 
+    pkexec --disable-internal-agent "/usr/bin/cliinst.rb" 
 else
     /usr/bin/cliinst.sh
 fi
